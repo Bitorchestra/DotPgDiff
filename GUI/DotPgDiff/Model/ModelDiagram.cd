@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="DotPgDiff.Model.BaseType" Collapsed="true">
+    <Position X="1.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAIAAAAAAAABAAAAAADAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\BaseType.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DotPgDiff.Model.Base" Collapsed="true">
+    <Position X="9.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAMACAAAABAIAAwAAAAARAAAAAAJAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Base.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DotPgDiff.Model.Scoped&lt;ParentType&gt;" Collapsed="true">
+    <Position X="8" Y="1.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAQABAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Base.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DotPgDiff.Model.Column" Collapsed="true">
+    <Position X="5.75" Y="3.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAABAAAAAAAAIABAAAAAABAAAQAAAAAEIgA=</HashCode>
+      <FileName>Model\Column.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DotPgDiff.Model.CompositeType" Collapsed="true">
+    <Position X="11.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAAAAAAABAAAAAADAAAAAAAAgAAAA=</HashCode>
+      <FileName>Model\CompositeType.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DotPgDiff.Model.Database" Collapsed="true">
+    <Position X="17.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAABAAAAAAAQAABAAAAAABAIAAAAACAAgAA=</HashCode>
+      <FileName>Model\Database.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DotPgDiff.Model.Operator" Collapsed="true">
+    <Position X="3.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BgADEAAAAAABAAGAAQAAIABAAAAAABQAAAABABBECCA=</HashCode>
+      <FileName>Model\Operator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DotPgDiff.Model.Function" Collapsed="true">
+    <Position X="8.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAABAAAQQAAAAABAAAAABBAAAAAAAAAAAAI=</HashCode>
+      <FileName>Model\Function.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DotPgDiff.Model.Schema" Collapsed="true">
+    <Position X="15" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAABAIAAAAAAQAJAAAAAADAAAAAAAAAAIAA=</HashCode>
+      <FileName>Model\Schema.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DotPgDiff.Model.Table" Collapsed="true">
+    <Position X="12.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAAAAAAAAAAAAAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Table.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DotPgDiff.Model.View" Collapsed="true">
+    <Position X="10.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAQAAAAABAAAAAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\View.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="DotPgDiff.Model.IBase" Collapsed="true">
+    <Position X="1.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAMACAAAAAAIAAQAAAAAQAAAAAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Base.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="DotPgDiff.Model.IType" Collapsed="true">
+    <Position X="0.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Base.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="DotPgDiff.Model.IScoped" Collapsed="true">
+    <Position X="2.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Base.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

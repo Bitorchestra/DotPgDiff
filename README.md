@@ -1,0 +1,1 @@
+# DotPgDiff #*DotPgDiff* is a diff tool for [PostgreSQL](http://www.postgresql.org/) databases: giventwo of them, *DotPgDiff* is able to generate the SQL needed to make both structures equal.In PostgreSQL, since you can't ALTER a VIEW to acutally change it's type, changes deploycan be a burden; *DotPgDiff* aims to help in the process - and eventually handle the wholetask.
