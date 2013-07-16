@@ -4,25 +4,15 @@
 CREATE SCHEMA deps
 ;
 
-CREATE OR REPLACE FUNCTION deps.fa_iif(boolean, anyelement, anyelement)
-  RETURNS anyelement AS
-$$
-	SELECT
-		CASE
-			WHEN ($1)
-			THEN $2
-			ELSE $3
-		END;
-$$ LANGUAGE SQL 
-	IMMUTABLE;
-
 -- will be redefined in next source file
+	
 CREATE OR REPLACE FUNCTION deps.ft_object_fullname(object_oid oid) RETURNS TEXT
 AS $$
 	SELECT null::TEXT;
 $$ LANGUAGE SQL 
 	STABLE STRICT
 	SECURITY DEFINER;
+	
 CREATE OR REPLACE FUNCTION deps.hft_fk_action(text) RETURNS TEXT
 AS $$
 	SELECT null::TEXT;
@@ -35,6 +25,58 @@ CREATE TABLE deps.t_deps (
 	,oid_cascades_to	oid
 );
 
+-- ----------------------------------------------------------------------------------
+-- NAMEs
+
+-- funzione che restituisce il nome dello schema a cui appartiene l'oggetto indicato come parametro
+CREATE OR REPLACE FUNCTION deps.hft_namespace(oid oid)
+RETURNS TEXT AS
+$$
+	SELECT COALESCE(
+		-- operator
+		(SELECT ns.nspname
+		FROM pg_operator p 
+		JOIN pg_namespace ns ON p.oprnamespace = ns.oid 
+		WHERE p.oid = $1)
+		-- function
+		,(SELECT ns.nspname
+		FROM pg_proc p 
+		JOIN pg_namespace ns ON p.pronamespace = ns.oid 
+		WHERE p.oid = $1)
+		-- composite type
+		,(SELECT n.nspname
+		FROM 	pg_class c
+		JOIN	pg_namespace n ON c.relnamespace = n.oid
+		WHERE 	c.oid = $1)
+		)::TEXT;
+$$
+LANGUAGE SQL 
+	STABLE STRICT
+	SECURITY DEFINER;
+
+-- funzione che restituisce il nome dell'oggeto indicato come parametro
+CREATE OR REPLACE FUNCTION deps.hft_name(oid oid)
+RETURNS TEXT AS
+$BODY$
+	SELECT COALESCE(
+		-- operator
+		(SELECT p.oprname
+		FROM pg_operator p
+		WHERE p.oid = $1)
+		-- function
+		,(SELECT p.proname 
+		FROM pg_proc p
+		WHERE p.oid = $1)
+		-- composite type
+		,(SELECT c.relname
+		FROM 	pg_class c
+		WHERE 	c.oid = $1)
+		)::TEXT;
+$BODY$
+LANGUAGE SQL 
+	STABLE STRICT
+	SECURITY DEFINER;
+	
 -- ----------------------------------------------------------------------------------
 -- SCHEMAs
 
@@ -135,19 +177,6 @@ ALTER TABLE deps.t_composite_type
 
 CREATE INDEX idx_deps_composite_type_kind ON deps.t_composite_type(object_kind);
 
-CREATE OR REPLACE FUNCTION deps.hft_composite_type_fullname(type_oid oid) 
-	RETURNS TEXT
-AS $$
-	SELECT 	format('%I.%I', n.nspname, c.relname)
-	FROM 	pg_class c
-	JOIN	pg_namespace n ON c.relnamespace = n.oid
-	WHERE 	c.oid = $1
-	;
-$$
-LANGUAGE SQL 
-	STABLE STRICT
-	SECURITY DEFINER;	
-
 CREATE OR REPLACE FUNCTION deps.fv_composite_types (schema_oid oid) 
 	RETURNS SETOF deps.t_composite_type
 AS $$
@@ -160,7 +189,7 @@ AS $$
 			c.oid
 			,c.relnamespace
 			,c.relname
-			,deps.hft_composite_type_fullname(c.oid) AS fullname
+			,deps.ft_object_fullname(c.oid) AS fullname
 			,u.rolname
 			,'C'::char(1)
 		FROM pg_class c
@@ -188,7 +217,7 @@ AS $$
 			c.oid
 			,c.relnamespace
 			,c.relname
-			,deps.hft_composite_type_fullname(c.oid) AS fullname
+			,deps.ft_object_fullname(c.oid) AS fullname
 			,u.rolname
 			,'T'::char(1)
 		FROM pg_class c
@@ -216,7 +245,7 @@ AS $$
 			c.oid
 			,c.relnamespace
 			,c.relname
-			,deps.hft_composite_type_fullname(c.oid) AS fullname
+			,deps.ft_object_fullname(c.oid) AS fullname
 			,u.rolname
 			,'V'::char(1)
 		FROM pg_class c
@@ -399,14 +428,14 @@ AS $$
 		,c.conname
 		,UPPER(c.confupdtype)
 		,UPPER(c.confdeltype)
-		,format(E'ALTER TABLE %I\n\tADD CONSTRAINT %s\n\tFOREIGN KEY( %%1s )\n\tREFERENCES %s( %%2s )\n\t\tON DELETE %s\n\t\tON UPDATE %s;', 
+		,format(E'ALTER TABLE %s\n\tADD CONSTRAINT %s\n\tFOREIGN KEY( %%1s )\n\tREFERENCES %s( %%2s )\n\t\tON DELETE %s\n\t\tON UPDATE %s;', 
 			deps.ft_object_fullname($1),
 			c.conname, 
 			deps.ft_object_fullname(c.confrelid), 
 			deps.hft_fk_action(UPPER(c.confdeltype)),
 			deps.hft_fk_action(UPPER(c.confupdtype))
 		) || E'\n\t'
-		,format('ALTER TABLE %I',deps.hft_composite_type_fullname($1)) || E'\n\t' || format('DROP CONSTRAINT %s;', c.conname)
+		,format('ALTER TABLE %s',deps.ft_object_fullname($1)) || E'\n\t' || format('DROP CONSTRAINT %s;', c.conname)
 	FROM
 		pg_constraint c
 	WHERE
@@ -426,6 +455,7 @@ AS $$
 		WHEN 'C' THEN 'CASCADE'
 		WHEN 'N' THEN 'SET NULL'
 		WHEN 'D' THEN 'SET DEFAULT'
+		ELSE null::TEXT
 	END;
 $$ LANGUAGE SQL 
 	IMMUTABLE STRICT
@@ -584,18 +614,6 @@ ALTER TABLE deps.t_function
 			ON DELETE CASCADE
 			ON UPDATE NO ACTION;
 
-CREATE OR REPLACE FUNCTION deps.hft_function_fullname(func_oid oid) RETURNS TEXT
-AS $$
-	SELECT format('%I.%I', ns.nspname, p.proname) 
-	FROM pg_proc p 
-	JOIN pg_namespace ns ON p.pronamespace = ns.oid 
-	WHERE p.oid = $1
-	;
-$$
-LANGUAGE SQL
-	STABLE STRICT
-	SECURITY DEFINER;
-
 CREATE OR REPLACE FUNCTION deps.fv_functions (schema_oid oid) RETURNS SETOF deps.t_function	
 AS $$
 	SELECT
@@ -613,7 +631,7 @@ AS $$
 			p.oid
 			,p.pronamespace
 			,p.proname
-			,deps.hft_function_fullname(p.oid) AS fullname
+			,deps.ft_object_fullname(p.oid) AS fullname
 			,u.rolname
 			,ARRAY[]::oid[] || p.prorettype || string_to_array(p.proargtypes::text, ' ')::oid[] || p.proallargtypes AS used_type_oids
 			,pg_get_function_identity_arguments(p.oid) AS args
@@ -633,17 +651,6 @@ LANGUAGE SQL
 -- ----------------------------------------------------------------------------------
 -- OPERATORS
 
-CREATE OR REPLACE FUNCTION deps.hft_operator_fullname(opr_oid oid) RETURNS TEXT
-AS $$
-	SELECT format('%I.%I', ns.nspname, p.oprname) 
-	FROM pg_operator p 
-	JOIN pg_namespace ns ON p.oprnamespace = ns.oid 
-	WHERE p.oid = $1
-	;
-$$
-LANGUAGE SQL
-	STABLE STRICT;
-
 CREATE TABLE deps.t_operator (
 	oid 			oid NOT NULL
 	,schema_oid		oid NOT NULL
@@ -660,6 +667,7 @@ CREATE TABLE deps.t_operator (
 	,can_merge	bool NOT NULL
 	,est_rest	text
 	,est_join	text
+	,signature	text NOT NULL
 	,sql_drop	text
 	,sql_create	text
 	
@@ -675,13 +683,26 @@ ALTER TABLE deps.t_operator
 
 CREATE INDEX idx_deps_operator_fullname ON deps.t_operator(fullname);
 
+CREATE OR REPLACE FUNCTION deps.hft_args_operator(opoid oid)
+RETURNS text AS
+$BODY$
+	SELECT 
+		COALESCE(deps.hft_type_name(oprleft), 'NONE')
+		|| ', '
+		|| COALESCE(deps.hft_type_name(oprright), 'NONE')
+	FROM pg_operator
+	WHERE oid = $1;
+$BODY$
+LANGUAGE sql;
+COMMENT ON FUNCTION deps.hft_args_operator(oid) IS 'restituisce gli argomenti dell''operatore passato come parametro';
+
 CREATE OR REPLACE FUNCTION deps.fv_operators (schema_oid oid) RETURNS SETOF deps.t_operator
 AS $$
 	SELECT
 		op.oid
 		,op.oprnamespace
 		,op.oprname
-		,deps.hft_operator_fullname(op.oid)
+		,deps.ft_object_fullname(op.oid)
 		,u.rolname
 		,op.oprcode
 		,op.oprresult
@@ -691,20 +712,21 @@ AS $$
 		,NULLIF(op.oprnegate, 0)
 		,op.oprcanhash
 		,op.oprcanmerge
-		,deps.hft_function_fullname(NULLIF(op.oprrest, 0))
-		,deps.hft_function_fullname(NULLIF(op.oprjoin, 0))
+		,deps.ft_object_fullname(NULLIF(op.oprrest, 0))
+		,deps.ft_object_fullname(NULLIF(op.oprjoin, 0))
+		,format('%s(%s)', deps.ft_object_fullname(op.oid), deps.hft_args_operator(op.oid)) AS signature
 		,format('DROP OPERATOR IF EXISTS %I.%I(%s,%s)', ns.nspname, op.oprname, 
 			COALESCE(deps.hft_type_name(NULLIF(op.oprleft, 0)), 'NONE'),
 			COALESCE(deps.hft_type_name(NULLIF(op.oprright, 0)), 'NONE'))
-		,format('CREATE OPERATOR %I.%I(PROCEDURE = %s', ns.nspname, op.oprname, deps.hft_function_fullname(op.oprcode))
+		,format('CREATE OPERATOR %I.%s(PROCEDURE = %s', ns.nspname, op.oprname, deps.ft_object_fullname(op.oprcode))
 			|| CASE WHEN NULLIF(op.oprleft, 0) IS NULL THEN '' ELSE format(', LEFTARG = %s', deps.hft_type_name(op.oprleft)) END
 			|| CASE WHEN NULLIF(op.oprright, 0) IS NULL THEN '' ELSE format(', RIGHTARG = %s', deps.hft_type_name(op.oprright)) END
-			|| CASE WHEN NULLIF(op.oprcom, 0) IS NULL THEN '' ELSE format(', COMMUTATOR = %s', deps.hft_operator_fullname(op.oprcom)) END
-			|| CASE WHEN NULLIF(op.oprnegate, 0) IS NULL THEN '' ELSE format(', NEGATOR = %s', deps.hft_operator_fullname(op.oprnegate)) END
-			|| CASE WHEN NULLIF(op.oprrest, 0) IS NULL THEN '' ELSE format(', RESTRICT = %s', deps.hft_function_fullname(op.oprrest)) END
-			|| CASE WHEN NULLIF(op.oprjoin, 0) IS NULL THEN '' ELSE format(', JOIN = %s', deps.hft_function_fullname(op.oprjoin)) END
-			|| deps.fa_iif(op.oprcanhash, ', HASHES', ''::text)
-			|| deps.fa_iif(op.oprcanmerge, ', MERGES', ''::text)
+			|| CASE WHEN NULLIF(op.oprcom, 0) IS NULL THEN '' ELSE format(', COMMUTATOR = %s', deps.hft_name(op.oprcom)) END
+			|| CASE WHEN NULLIF(op.oprnegate, 0) IS NULL THEN '' ELSE format(', NEGATOR = %s', deps.hft_name(op.oprnegate)) END
+			|| CASE WHEN NULLIF(op.oprrest, 0) IS NULL THEN '' ELSE format(', RESTRICT = %s', deps.ft_object_fullname(op.oprrest)) END
+			|| CASE WHEN NULLIF(op.oprjoin, 0) IS NULL THEN '' ELSE format(', JOIN = %s', deps.ft_object_fullname(op.oprjoin)) END
+			|| bo.fa_iif(op.oprcanhash, ', HASHES', ''::text)
+			|| bo.fa_iif(op.oprcanmerge, ', MERGES', ''::text)
 			|| ')'
 	FROM pg_operator op
 	JOIN pg_namespace ns ON op.oprnamespace = ns.oid
@@ -753,7 +775,7 @@ AS $$
 		,t.tgrelid
 		,t.tgname 
 		,t.tgfoid
-		,format('DROP TRIGGER IF EXISTS %I ON %s;', tgname, deps.hft_composite_type_fullname(t.tgrelid))
+		,format('DROP TRIGGER IF EXISTS %I ON %s;', tgname, deps.ft_object_fullname(t.tgrelid))
 		,pg_get_triggerdef(oid) || ';'
 	FROM pg_trigger t
 	WHERE NOT t.tgisinternal
@@ -763,3 +785,28 @@ $$
 LANGUAGE SQL
 	STABLE STRICT
 	SECURITY DEFINER;
+
+-- ----------------------------------------------------------------------------------
+-- VIEWS
+	
+CREATE OR REPLACE VIEW deps.v_dependans_schemas AS
+	with o as (
+	 select oid, schema_oid, name from deps.t_composite_type 
+	 union all 
+	 select oid, schema_oid, name from deps.t_function
+	 union all 
+	 select oid, schema_oid, name from deps.t_operator
+	 ), k(oid_master, oid_cascades_to) as (
+	 select oid_master, oid_cascades_to from deps.t_deps
+	 union all
+	 select foreign_oid, master_oid  from deps.t_foreign_key
+	 )
+
+	select distinct sa.name as schema_master, sb.name as schema_cascades_to
+	from k d
+	join o a on d.oid_master = a.oid
+	join deps.t_schema sa on a.schema_oid = sa.oid
+	join o b on d.oid_cascades_to = b.oid
+	join deps.t_schema sb on b.schema_oid = sb.oid
+	where sa.oid != sb.oid
+	order by 2,1;

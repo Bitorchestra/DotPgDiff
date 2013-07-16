@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Npgsql;
+using System.Windows.Forms;
 
 namespace BO.DotPgDiff.Query
 {
@@ -10,6 +12,7 @@ namespace BO.DotPgDiff.Query
     {
         private string _dbName;
         private NpgsqlConnection _conn;
+        private string str;
 
         public Loader(NpgsqlConnectionStringBuilder connectionInfo)
         {
@@ -55,7 +58,7 @@ namespace BO.DotPgDiff.Query
                     }
                 }
             }
-
+            //*****************************************************************************************
             rt.Schemas = this.ListSchemas(rt);
             rt.BaseTypes = this.ListBaseTypes(rt);
 
@@ -63,7 +66,7 @@ namespace BO.DotPgDiff.Query
 
             return rt;
         }
-
+        
         private List<T> LoadSet<T>(Action<NpgsqlCommand> prepareCommand, Func<NpgsqlDataReader, T> getElement)
         {
             var rt = new List<T>();
@@ -248,15 +251,41 @@ namespace BO.DotPgDiff.Query
                     Oid = (long)reader[0],
                     Name = (string)reader[1],
 					FullName = (string)reader[2],
-                    Owner = (string)reader[3],
-					SqlDrop = (string)reader[4],
-					SqlCreate = (string)reader[5],
+                    Signature = (string)reader[3],
+                    Owner = (string)reader[4],
+					SqlDrop = (string)reader[5],
+					SqlCreate = (string)reader[6],
 					Parent = schema
 				}	//oid, name, fullname, owner, sql_drop, sql_create
             );
 
             return rt;
         }
+
+        public string TextPrLoadStart()
+        {
+            var cmd = _conn.CreateCommand();
+            cmd.CommandText = Catalog.DepsLastLoad;
+
+            using (var reader = cmd.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    try
+                    {
+                        str = (string)reader[0];
+                    }
+                    catch (Exception e)
+                    {
+                        return "1970-01-01 00:00:00"; 
+                    }
+                }
+            }
+            Dispose();
+            return str;
+        }
+
+
 		/*
         private List<Model.Column> ListColumns(Model.CompositeType t)
         {
