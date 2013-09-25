@@ -13,6 +13,24 @@ namespace BO.DotPgDiff
 {
     public partial class Connect : Form
     {
+		private const string ID_FORMAT = "{0}@{1}@{2}:{3}";
+
+		private string FileFolder
+		{
+			get
+			{
+				return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "\\" + this.GetType().Assembly.GetName().Name;
+			}
+		}
+
+		private string FileName
+		{
+			get
+			{
+				return this.FileFolder + "\\credentials.xml";
+			}
+		}
+
         public Connect()
         {
             InitializeComponent();
@@ -47,41 +65,35 @@ namespace BO.DotPgDiff
         {
             if (check.Checked)
             {// se il checkbox e' stato segnato allora...
-                string path = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "\\UsersXml";
-                string pathu = path + "\\users.xml";
+				string path = this.FileFolder;
+				string filePath = this.FileName;
 
                 //esiste la cartella?
-                if (!ExistsFolderXml(path))
+                if (!ExistsFolder(path))
                 {
                     //creazione della cartella
-                    if (!CreateFolderXml(path))
-                    {
-                        MessageBox.Show("Errore!\nnon è stato possibile creare la cartella\n" + path);
-                    }
+					if (!CreateFolder(path))
+						return;
                 }
 
                 //esiste il file XML?
-                if (!ExistFile(pathu))
+                if (!ExistFile(filePath))
                 {
                     //creazione del file
-                    if (!CreateXmlUser(pathu))
-                    {
-                        MessageBox.Show("Errore!\nnon è stato possibile il file XML");
-                    }
+					if (!CreateFile(filePath))
+						return;
                 }
 
                 //esiste l'utente?
-                if (!ExistUser(host.Text, port.Text, user.Text, password.Text, database.Text, pathu))
+                if (!UserExists(host.Text, port.Text, user.Text, password.Text, database.Text, filePath))
                 {
                     var rt = this.TryConnect();
                     //se mi collego
                     if (rt == null)
                     {
                         //salvo i dati dell'utente
-                        if (!saveUser(host.Text, port.Text, user.Text, password.Text, database.Text, pathu))
-                        {
-                            MessageBox.Show("non e' stato possibile salvare l'utente indicato");
-                        }
+						if (!SaveUser(host.Text, port.Text, user.Text, password.Text, database.Text, filePath))
+							return;
                         this.DialogResult = DialogResult.OK;
                     }
                     else
@@ -96,10 +108,8 @@ namespace BO.DotPgDiff
                     if (rt == null)
                     {
                         //aggiorno i dati dell'utente
-                        if (!refreshUser(string.Format("{0}@{1}@{2}", user.Text, database.Text, host.Text), port.Text, password.Text, pathu))
-                        {
-                            MessageBox.Show("i nuovi dati dell'utente non sono stati aggiornati nel file\n" + pathu);
-                        }
+						if (!UpdateUser(string.Format(ID_FORMAT, user.Text, database.Text, host.Text, port.Text), port.Text, password.Text, filePath))
+							return;
                         this.DialogResult = DialogResult.OK;
                     }
                     else
@@ -127,40 +137,16 @@ namespace BO.DotPgDiff
             this.DialogResult = DialogResult.Cancel;
         }
 
-        private void Connect_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void host_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        #region salvareConnessione
+        #region Salvataggio credenziali
         
         //Verifica l'esistenza della cartella indicata in path
-        public static bool ExistsFolderXml(string path)
+        public static bool ExistsFolder(string path)
         {
-            try
-            {
-                if (Directory.Exists(path))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                return false;  //non è stato possibile creare la cartella...  
-            }
+			return Directory.Exists(path);
         }
 
         //crea la cartella che avra al suo interno il file XML
-        public static bool CreateFolderXml(string path)
+        public static bool CreateFolder(string path)
         {
             try
             {
@@ -169,32 +155,19 @@ namespace BO.DotPgDiff
             }
             catch (Exception ex)
             {
+				MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;  //non è stato possibile creare la cartella...  
             }
         }
 
         //verifica l'esistenza del file XML
-        public static bool ExistFile(string pathu)
+        public static bool ExistFile(string path)
         {
-            try
-            {
-                if (File.Exists(pathu))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+			return File.Exists(path);
         }
         
         //creazione del file XML sul quale dopo verrano salvati gli utenti
-        private static bool CreateXmlUser(string pathu)
+        private static bool CreateFile(string pathu)
         {
             bool crt = false;
             try
@@ -212,19 +185,19 @@ namespace BO.DotPgDiff
             }
             catch (Exception ex)
             {
-                crt = false;
+				MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             return crt;
         }
 
         //verifica l'esistenza dell'utente inserito o scelto
-        public bool ExistUser(string pHost, string pPort, string pUsername, string pPassword, string pDatabase, string pathu)
+        public bool UserExists(string pHost, string pPort, string pUsername, string pPassword, string pDatabase, string filePath)
         {
-            string pString = string.Format("{0}@{1}@{2}", pUsername, pDatabase, pHost);
+            string pString = string.Format(ID_FORMAT, pUsername, pDatabase, pHost, pPort);
             bool trovato = false;
 
             XmlDocument xDoc = new XmlDocument();
-            xDoc.Load(pathu);
+            xDoc.Load(filePath);
 
             XmlNodeList usr = xDoc.GetElementsByTagName("Users");
             XmlNodeList list = ((XmlElement)usr[0]).GetElementsByTagName("user");
@@ -244,7 +217,7 @@ namespace BO.DotPgDiff
         }
 
         //salva un utente sul file XML
-        public static bool saveUser(string pHost, string pPort, string pUsername, string pPassword, string pDatabase, string pathu)
+        public static bool SaveUser(string pHost, string pPort, string pUsername, string pPassword, string pDatabase, string pathu)
         {
             XmlDocument XmlDoc;
             XmlNode _node;
@@ -270,7 +243,7 @@ namespace BO.DotPgDiff
                 NewUser["Username"].InnerText = pUsername;
                 NewUser["Password"].InnerText = pPassword;
                 NewUser["Database"].InnerText = pDatabase;
-                NewUser["String"].InnerText = string.Format("{0}@{1}@{2}", pUsername, pDatabase, pHost);
+                NewUser["String"].InnerText = string.Format(ID_FORMAT, pUsername, pDatabase, pHost, pPort);
 
                 _node.InsertAfter(NewUser, _node.LastChild);  // inserisce subito dopo l'ultimo user memorizzato
                 XmlTextWriter _wirteRec = new XmlTextWriter(pathu, System.Text.Encoding.UTF8);
@@ -280,13 +253,13 @@ namespace BO.DotPgDiff
             }
             catch (Exception ex)
             {
-                rta = false; 
+				MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             return rta;
         }
 
         //aggiorna i dati dell'utente data la sua stringa
-        public static bool refreshUser(string str, string pPort, string pPassword, string pathu)
+        public static bool UpdateUser(string str, string pPort, string pPassword, string pathu)
         {
             bool rta = false;
             XmlDocument xDoc = new XmlDocument();
@@ -321,11 +294,11 @@ namespace BO.DotPgDiff
             users.Items.Add("clean");
             
             //caricare le stringhe degli utenti se esiste un file che gli contenga
-            string pathu = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "\\UsersXml\\users.xml";
-            if (ExistFile(pathu))
+			string FilePath = this.FileName;
+            if (ExistFile(FilePath))
             {
                 XmlDocument xDoc = new XmlDocument();
-                xDoc.Load(pathu);
+                xDoc.Load(FilePath);
                 string newcon = users.Text;
                 XmlNodeList usr = xDoc.GetElementsByTagName("Users");
                 XmlNodeList list = ((XmlElement)usr[0]).GetElementsByTagName("user");
@@ -352,9 +325,9 @@ namespace BO.DotPgDiff
             }
             else
             {
-                string pathu = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "\\UsersXml\\users.xml";
+				string filePath = this.FileName;
                 XmlDocument xDoc = new XmlDocument();
-                xDoc.Load(pathu);
+                xDoc.Load(filePath);
                 string newcon = users.Text;
                 XmlNodeList usr = xDoc.GetElementsByTagName("Users");
                 XmlNodeList list = ((XmlElement)usr[0]).GetElementsByTagName("user");
