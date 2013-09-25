@@ -9,32 +9,31 @@ using System.Windows.Forms;
 
 namespace BO.DotPgDiff
 {
-    public partial class windowSql : Form
+    public partial class CodeSql : Form
     {
-        public windowSql()
+        public CodeSql(string SQL)
         {
             InitializeComponent();
+			this.textSql.Text = SQL;
         }
 
-        public void setText(string text)
-        {
-            this.textSql.Text = text;
-        }
 
-        public string getText()
-        {
-            return this.textSql.Text;
-
-        }
+		public string SQL
+		{
+			get
+			{
+				return this.textSql.Text;
+			}
+		}
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("avanti");
+			this.DialogResult = DialogResult.OK;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("stop");
+			this.DialogResult = DialogResult.Abort;
         }
     }
 }
