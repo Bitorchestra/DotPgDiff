@@ -65,40 +65,31 @@ namespace BO.DotPgDiff.Query
             WHERE NOT a.attisdropped AND a.attnum > 0 AND a.attrelid = {0}
             ORDER BY a.attnum", Params.Table);
 
-        public static readonly string DepsCreate =
-        @"SELECT (SELECT m_created FROM bo.t_e_parameter WHERE t_parameter_id = 'DEPS-LAST-LOAD')::text";
-
-        public static readonly string DepsLastLoad =
-        @"SELECT (SELECT m_last_modified FROM bo.t_e_parameter WHERE t_parameter_id = 'DEPS-LAST-LOAD')::text";
-
-        public static readonly string prLoad =
+        public static readonly string DepsRebuild =
         @"SELECT deps.pr_load();";
 
-        public static readonly string Insert =
-        @"INSERT INTO bo.t_e_parameter (t_parameter_id, t_value) VALUES ('DEPS-LAST-LOAD','statecurrent_timestamp')";
+		public static readonly string DepsGetLoadTime =
+		@"SELECT t_value::timestamptz FROM bo.t_e_parameter WHERE t_parameter_id = 'DEPS-LAST-LOAD'";
+		
+		public static readonly string DepsAddLoadTime =
+        @"INSERT INTO bo.t_e_parameter (t_parameter_id, t_value) VALUES ('DEPS-LAST-LOAD',current_timestamp)";
 
-        public static readonly string Update =
-        @"UPDATE bo.t_e_parameter SET m_last_modified = clock_timestamp() WHERE t_parameter_id = 'DEPS-LAST-LOAD'";
+        public static readonly string DepsUpdateLoadTime =
+        @"UPDATE bo.t_e_parameter SET t_value = current_timestamp WHERE t_parameter_id = 'DEPS-LAST-LOAD'";
 
-        public static readonly string parentsFn =
+        public static readonly string ParentNames =
             @"SELECT unnest(deps.hfa_fullname_masters_of(deps.fi_object_oid('{0}')))";
 
-        /*public static readonly string parentsOid =
-            @"SELECT unnest(deps.hfa_masters_of({0}))";
-
-        public static readonly string childrens =
-            @"SELECT unnest(deps.hfa_slaves_of({0}::oid))";*/
-
-        public static readonly string oidParents =
+        public static readonly string ParentOids =
             @"SELECT unnest(deps.hfa_oid_masters_of({0}))";
 
-        public static readonly string dbnrdb =
+        public static readonly string GetDropChain =
             @"SELECT deps.ft_sql_drop_chain(ARRAY[ {0} ])";
 
-        public static readonly string ur =
+        public static readonly string GetUpdateChain =
             @"SELECT deps.ft_sql_update('{0}'::hstore)";
 
-        public static readonly string bnb =
-            @"SELECT deps.ft_sql_create_chain(Array[ {0} ])";
+        public static readonly string GetCreateChain =
+            @"SELECT deps.ft_sql_create_chain(ARRAY[ {0} ])";
     }
 }

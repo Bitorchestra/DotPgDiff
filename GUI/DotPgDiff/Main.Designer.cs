@@ -29,7 +29,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.prLoadSource = new System.Windows.Forms.Button();
+            this.btnDependencyLoadSource = new System.Windows.Forms.Button();
             this.sourceDescription = new System.Windows.Forms.Label();
             this.sourceConnect = new System.Windows.Forms.Button();
             this.sourceTree = new System.Windows.Forms.TreeView();
@@ -42,7 +42,7 @@
             this.btnDiff = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.SQLSource = new System.Windows.Forms.TextBox();
-            this.prLoadTarget = new System.Windows.Forms.Button();
+            this.btnDependencyLoadTarget = new System.Windows.Forms.Button();
             this.targetConnect = new System.Windows.Forms.Button();
             this.targetDescription = new System.Windows.Forms.Label();
             this.targetTree = new System.Windows.Forms.TreeView();
@@ -66,7 +66,7 @@
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.prLoadSource);
+            this.splitContainer1.Panel1.Controls.Add(this.btnDependencyLoadSource);
             this.splitContainer1.Panel1.Controls.Add(this.sourceDescription);
             this.splitContainer1.Panel1.Controls.Add(this.sourceConnect);
             this.splitContainer1.Panel1.Controls.Add(this.sourceTree);
@@ -82,17 +82,17 @@
             // 
             // prLoadSource
             // 
-            this.prLoadSource.Dock = System.Windows.Forms.DockStyle.Top;
-            this.prLoadSource.Enabled = false;
-            this.prLoadSource.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.prLoadSource.Location = new System.Drawing.Point(0, 26);
-            this.prLoadSource.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.prLoadSource.Name = "prLoadSource";
-            this.prLoadSource.Size = new System.Drawing.Size(277, 26);
-            this.prLoadSource.TabIndex = 3;
-            this.prLoadSource.Text = "Last Update Schema Deps:";
-            this.prLoadSource.UseVisualStyleBackColor = true;
-            this.prLoadSource.Click += new System.EventHandler(this.prLoadSource_Click);
+            this.btnDependencyLoadSource.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnDependencyLoadSource.Enabled = false;
+            this.btnDependencyLoadSource.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDependencyLoadSource.Location = new System.Drawing.Point(0, 26);
+            this.btnDependencyLoadSource.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.btnDependencyLoadSource.Name = "prLoadSource";
+            this.btnDependencyLoadSource.Size = new System.Drawing.Size(277, 26);
+            this.btnDependencyLoadSource.TabIndex = 3;
+            this.btnDependencyLoadSource.Text = "Last Update Schema Deps:";
+            this.btnDependencyLoadSource.UseVisualStyleBackColor = true;
+			this.btnDependencyLoadSource.Click += new System.EventHandler(this.btnDependencyLoadSource_Click);
             // 
             // sourceDescription
             // 
@@ -155,7 +155,7 @@
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.prLoadTarget);
+            this.splitContainer2.Panel2.Controls.Add(this.btnDependencyLoadTarget);
             this.splitContainer2.Panel2.Controls.Add(this.targetConnect);
             this.splitContainer2.Panel2.Controls.Add(this.targetDescription);
             this.splitContainer2.Panel2.Controls.Add(this.targetTree);
@@ -262,16 +262,16 @@
             // 
             // prLoadTarget
             // 
-            this.prLoadTarget.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.btnDependencyLoadTarget.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.prLoadTarget.Enabled = false;
-            this.prLoadTarget.Location = new System.Drawing.Point(0, 26);
-            this.prLoadTarget.Name = "prLoadTarget";
-            this.prLoadTarget.Size = new System.Drawing.Size(271, 26);
-            this.prLoadTarget.TabIndex = 4;
-            this.prLoadTarget.Text = "Last Update Schema Deps:";
-            this.prLoadTarget.UseVisualStyleBackColor = true;
-            this.prLoadTarget.Click += new System.EventHandler(this.prLoadTarget_Click);
+            this.btnDependencyLoadTarget.Enabled = false;
+            this.btnDependencyLoadTarget.Location = new System.Drawing.Point(0, 26);
+            this.btnDependencyLoadTarget.Name = "prLoadTarget";
+            this.btnDependencyLoadTarget.Size = new System.Drawing.Size(271, 26);
+            this.btnDependencyLoadTarget.TabIndex = 4;
+            this.btnDependencyLoadTarget.Text = "Last Update Schema Deps:";
+            this.btnDependencyLoadTarget.UseVisualStyleBackColor = true;
+			this.btnDependencyLoadTarget.Click += new System.EventHandler(this.btnDependencyLoadTarget_Click);
             // 
             // targetConnect
             // 
@@ -352,8 +352,8 @@
 		private System.Windows.Forms.TextBox SQLTarget;
 		private System.Windows.Forms.Button btnCopyTarget;
         private System.Windows.Forms.Button btnCopySource;
-        private System.Windows.Forms.Button prLoadSource;
-        private System.Windows.Forms.Button prLoadTarget;
+        private System.Windows.Forms.Button btnDependencyLoadSource;
+        private System.Windows.Forms.Button btnDependencyLoadTarget;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button btnSync;
 

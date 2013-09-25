@@ -12,7 +12,6 @@ namespace BO.DotPgDiff.Query
     {
         private string _dbName;
         private NpgsqlConnection _conn;
-        private string str;
 
         public Loader(NpgsqlConnectionStringBuilder connectionInfo)
         {
@@ -260,29 +259,6 @@ namespace BO.DotPgDiff.Query
             );
 
             return rt;
-        }
-
-        public string TextPrLoadStart()
-        {
-            var cmd = _conn.CreateCommand();
-            cmd.CommandText = Catalog.DepsLastLoad;
-
-            using (var reader = cmd.ExecuteReader())
-            {
-                if (reader.Read())
-                {
-                    try
-                    {
-                        str = (string)reader[0];
-                    }
-                    catch (Exception e)
-                    {
-                        return "1970-01-01 00:00:00"; 
-                    }
-                }
-            }
-            Dispose();
-            return str;
         }
 
 
